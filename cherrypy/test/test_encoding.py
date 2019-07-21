@@ -70,6 +70,10 @@ class EncodingTests(helper.CPWebCase):
                     'Content-Type'] = 'application/binary'
                 return '\x00\x01\x02\x03'
 
+            @cherrypy.expose
+            def filename(self, test_file):
+                return test_file.filename.encode('utf-8')
+
         class GZIP:
 
             @cherrypy.expose
@@ -258,6 +262,26 @@ class EncodingTests(helper.CPWebCase):
                      ],
                      body=body),
         self.assertBody(b'submit: Create, text: ab\xe2\x80\x9cc')
+
+    def test_multipart_decoding_filename(self):
+        # Test the decoding of a filename encoded in UTF-8.
+        body = ntob('\r\n'.join([
+            '--X',
+            'Content-Disposition: form-data; name="test_file"; filename="D\xc3\xa9mo.pdf"',
+            'Content-Type: application/pdf',
+            '',
+            '--X--'
+        ]))
+        self.getPage(
+            '/filename',
+            method='POST',
+            headers=[
+                ("Content-Type", "multipart/form-data;boundary=X"),
+                ("Content-Length", str(len(body))),
+            ],
+            body=body
+        ),
+        self.assertBody(ntob("D\xc3\xa9mo.pdf"))
 
     @mock.patch('cherrypy._cpreqbody.Part.maxrambytes', 1)
     def test_multipart_decoding_bigger_maxrambytes(self):

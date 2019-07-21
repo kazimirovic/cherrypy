@@ -637,11 +637,11 @@ class Part(Entity):
 
             if line[0] in b' \t':
                 # It's a continuation line.
-                v = line.strip().decode('ISO-8859-1')
+                v = line.strip().decode()
             else:
                 k, v = line.split(b':', 1)
-                k = k.strip().decode('ISO-8859-1')
-                v = v.strip().decode('ISO-8859-1')
+                k = k.strip().decode()
+                v = v.strip().decode()
 
             existing = headers.get(k)
             if existing:
